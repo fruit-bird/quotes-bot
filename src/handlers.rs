@@ -62,6 +62,8 @@ pub async fn create_quote(
     .execute(&pool)
     .await;
 
+    tracing::info!("Created quote with UUID: {}", quote.id);
+
     match res {
         Ok(_) => Ok((StatusCode::CREATED, Json(quote))),
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
@@ -86,6 +88,9 @@ pub async fn read_quotes(
     .fetch_all(&pool)
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
     .await?;
+
+    tracing::info!("page: {}, per_page: {}, offset: {}", page, per_page, offset);
+    tracing::info!("Read {} quotes", quotes.len());
 
     Ok(Json(quotes))
 }
@@ -125,12 +130,21 @@ pub async fn delete_quote(State(pool): State<PgPool>, Path(id): Path<Uuid>) -> S
         .execute(&pool)
         .await
         .map(|res| match res.rows_affected() {
-            0 => StatusCode::NOT_FOUND,
+            0 => {
+                tracing::warn!("Quote with id: {} not found", id);
+                StatusCode::NOT_FOUND
+            }
             _ => StatusCode::OK,
         });
 
     match res {
-        Ok(status) => status,
-        Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        Ok(status) => {
+            tracing::info!("Deleted quote with id: {}", id);
+            status
+        }
+        Err(_) => {
+            tracing::warn!("Failed to delete quote with id: {}", id);
+            StatusCode::INTERNAL_SERVER_ERROR
+        }
     }
 }
