@@ -7,12 +7,13 @@ edition = "2021"
 
 [dependencies]
 axum = { version = "0.7.5", features = ["tracing"] }
+chrono = { version = "0.4.37", features = ["serde"] }
+dotenv = "0.15.0"
+futures-util = "0.3.30"
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.115"
-sqlx = { version = "0.7.4", features = ["runtime-tokio-native-tls", "postgres"] }
+sqlx = { version = "0.7.4", features = ["runtime-tokio-native-tls", "postgres", "uuid", "chrono"] }
 tokio = { version = "1.37.0", features = ["full"] }
+tower-http = { version = "0.5.2", features = ["trace"] }
 tracing = "0.1.40"
-uuid = { version = "1.8.0", features = ["serde"] }
-
-[dev-dependencies]
-dotenv = "0.15.0"
+uuid = { version = "1.8.0", features = ["serde", "v4", "fast-rng"] }
